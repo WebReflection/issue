@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+loopAndList() {
+  local tech="$1"
+  for dir in $(ls $tech); do
+    echo "  * [${dir}](https://webreflection.github.io/issue/$tech/${dir}/)" >> README.md
+  done
+}
+
+echo '# issue
+A repo to publish live, reproducible, issues in browsers.
+' > README.md
+
+echo '## CSS' >> README.md
+loopAndList 'css'

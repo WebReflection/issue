@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DOM capture VS bubble</title>
+  <script type="module">
+  // click the button and read in console:
+  //  * Chrome, Safari, Firefox: capture before bubble every single time
+  const consistent = document.body.appendChild(document.createElement('button'));
+  consistent.textContent = 'consistent';
+  consistent.addEventListener('click', () => console.log('capture'), true);
+  consistent.addEventListener('click', () => console.log('bubble'), false);
+
+  // click the button and read in console:
+  //  * Chrome, Safari: capture before bubble every single time
+  //  * Firefox: bubble before capture every single time
+  const inconsistent = document.body.appendChild(document.createElement('button'));
+  inconsistent.textContent = 'inconsistent';
+  inconsistent.addEventListener('click', () => console.log('bubble'), false);
+  inconsistent.addEventListener('click', () => console.log('capture'), true);
+
+  // click the button and read in console:
+  //  * Chrome, Safari: bubble first click, then capture before bubble every other
+  //  * Firefox: bubble first click, then bubble before capture every other
+  const inconsistentLazy = document.body.appendChild(document.createElement('button'));
+  inconsistentLazy.textContent = 'inconsistent lazy';
+  let addCapture = true;
+
+  inconsistentLazy.addEventListener(
+    'click',
+    () => {
+      if (addCapture) {
+        addCapture = false;
+        inconsistentLazy.addEventListener(
+          'click',
+          () => {
+            console.log('capture');
+          },
+          true
+        );
+      }
+      console.log('bubble');
+    },
+    false
+  );
+  </script>
+</head>
+</html>

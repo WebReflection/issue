@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firefox MessageChannel port bug</title>
+  <script type="module">
+    const w = new Worker('./worker.js', { type: 'module' });
+    const { port1, port2 } = new MessageChannel;
+    w.postMessage(null, [port2]);
+    w.onmessage = ({ data }) => console.log(data);
+    port1.onmessage = ({ data }) => {
+      console.log('message received');
+      data[1] = 123;
+      data[0] = 1;
+      Atomics.notify(data, 0);
+    };
+  </script>
+</head>
+</html>

@@ -4,6 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Firefox MessageChannel port bug</title>
+  <script>
+    if (location.search === '?sw')
+      document.write('<script src="mini-coi.js"><\x2fscript>');
+  </script>
   <script type="module">
     const w = new Worker('./worker.js', { type: 'module' });
     const { port1, port2 } = new MessageChannel;

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BroadcastChannel + Atomics.pause gotchas</title>
+  <script>
+    if (location.search === '?sw')
+      document.write('<script src="mini-coi.js"><\x2fscript>');
+  </script>
+  <script type="module">
+    const bc = new BroadcastChannel('test');
+    const w = new Worker('./worker.js', { type: 'module' });
+
+    const { promise, resolve } = Promise.withResolvers();
+    const now = performance.now();
+
+    // bootstrap the worker
+    w.postMessage(null);
+
+    // apparently in Chromium the BroadcastChannel cannot send a view with
+    // SharedArrayBuffer attached (it is `null` if sent directly)
+    // so we queue the view in `postMessage` so that bc can then use it
+    w.onmessage = ({ data: { message, view } }) => {
+      if (view) {
+        console.log(message);
+        resolve(view);
+      }
+      else document.body.append(message, ' [', (performance.now() - now).toFixed(2), 'ms]');
+    };
+
+    // will resolve the view at index 0
+    bc.onmessage = async ({ data }) => {
+      // Firefox can send the view directly ... let's use it
+      const view = data || await promise;
+      console.log('data received', data ? 'directly' : 'via postMessage');
+      view[1] = 123;
+      view[0] = 1;
+      Atomics.notify(view, 0);
+      // Firefox will take seconds to understand that the view is ready
+      if (data) console.log('... tick, tock ...');
+    };
+  </script>
+</head>
+</html>
